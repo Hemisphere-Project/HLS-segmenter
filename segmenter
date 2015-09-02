@@ -1,0 +1,183 @@
+#!/usr/bin/python
+import sys, getopt
+import os, errno
+import subprocess
+import shutil
+import time
+from collections import OrderedDict
+import logging as log
+
+starttime = runtime = time.time()
+log.basicConfig(level=log.DEBUG)
+
+def ellapsed(overall=False):
+    global runtime
+    t = (time.time() - starttime) if overall else (time.time() - runtime)
+    runtime = time.time()
+    return "%d:%02d:%02d" % (int(t//3600), int(t/60)%3600, round(t)%60)
+
+# Mkdir (and erase if exist)
+def makedir(path):
+    shutil.rmtree(path, True)
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path): pass
+        else: raise
+
+
+# Utils to detect video aspect ratio using FFProbe
+def detect_ratio(filepath):
+    # detect video aspect ratio
+    aspectratio = '16/9'
+    width = height = 0
+
+    def result(valid=True):
+        if valid:
+            log.info('Detected aspect ratio: {0}'.format(aspectratio))
+        else:
+            log.warning('Can\'t detect video aspect ratio.. going with default: {0}'.format(aspectratio))
+        return aspectratio
+
+    # FFProbe command
+    ffprobecmd = 'ffprobe -v error -show_entries stream=width,height -of default=noprint_wrappers=1 {0}'.format(filepath)
+    probe = subprocess.Popen(ffprobecmd.split(), stdout=subprocess.PIPE)
+    output, err = probe.communicate()
+    output = output.split()
+    try:
+        width = float(output[ (0 if output[0][0] == 'w' else 1) ].split('=')[1])
+        height = float(output[ (0 if output[0][0] == 'h' else 1) ].split('=')[1])
+        ratio = width/height
+        if ratio > 1.2 and ratio < 1.9:
+            if ratio < 1.5: aspectratio = '4/3'
+            else: aspectratio = '16/9'
+            return result()
+    except:
+        pass
+    return result(False)
+
+
+# Utils to detect max segment bitrate using FFProbe
+def detect_bitrate(path):
+    bitrate = 0
+
+    # FFProbe command
+    ffprobecmd = 'ffprobe -v error -show_entries format=bit_rate -of default=noprint_wrappers=1 {0}'
+
+    # Check each file in the path and keep max bitrate
+    for (dirpath, dirnames, files) in os.walk(path):
+        for filename in files:
+            if filename[-2:] == 'ts':
+                try:
+                    filepath = os.path.join(path, filename)
+                    probe = subprocess.Popen(ffprobecmd.format(filepath).split(), stdout=subprocess.PIPE)
+                    output, err = probe.communicate()
+                    output = int(output.split('=')[1])
+                    if not output > 0: raise
+                    bitrate = max(bitrate, output)
+                except:
+                    log.error('Can\'t detect bitrate for the file {0}'.format(filepath))
+
+    log.debug('Bitrate detected: {0}'.format(bitrate)) if bitrate > 0 else  log.warning('No Bitrate detected in {0}'.format(path))
+    return bitrate
+
+
+# Execute FFMPEG segmenter based on predefined profiles
+def segmenter(inputfile, dryrun=False):
+    # import profiles presets
+    import presets
+
+    # base ffmpeg command
+    ffmpegcmd = 'ffmpeg -y -v warning -i %(inputfile)s -c:a aac -strict experimental -ac 2 -b:a %(audiobitrate)s -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v baseline -preset %(ffmpegmode)s -level %(level)s -b:v %(videobitrate)s -maxrate %(videobitrate)s -bufsize %(buffersize)s -threads 0 -r %(fps)s -g %(gop)s -hls_time %(segmentsize)s -hls_list_size 0 -s %(resolution)s %(outputpath)s/%(outputname)s.m3u8'
+
+    # working path / name
+    workname = os.path.splitext(os.path.basename(inputfile))[0]
+    workpath = os.path.splitext(inputfile)[0]
+    if not dryrun:
+        makedir(workpath)
+
+    # execute ffmpeg commands formated with the profiles
+    variants = OrderedDict()
+    profiles = presets.build(inputfile=inputfile, ratio=detect_ratio(inputfile))
+    ellapsed()
+    for quality, preset in profiles:
+        log.info("Processing media with profile: {0}".format(quality))
+        preset['outputpath'] = os.path.join(workpath, quality)
+        if not dryrun:
+            # Output path
+            makedir(preset['outputpath'])
+            # Execute FFMPEG command
+            probe = subprocess.Popen((ffmpegcmd % preset).split(), stdout=subprocess.PIPE)
+            output, err = probe.communicate()
+        # Save m3u8 file path, resolution and maximum bitrate
+        if not err:
+            variants[quality] = {
+                'resolution': preset['resolution'],
+                'playlist': os.path.join(quality, preset['outputname']+'.m3u8'),
+                'bitrate': detect_bitrate(preset['outputpath'])
+            }
+        # Log
+        try:
+            if variants[quality]['bitrate'] > 0:
+                log.debug('Profile {0} completed in {1}'.format(quality, ellapsed()))
+        except:
+            log.error('Error with profile {0}: {1}'.format(quality, err))
+
+
+
+    # Create variant playlist
+    variantfilepath = os.path.join(workpath, workname+'.m3u8')
+    with open(variantfilepath, 'w') as f:
+        f.write('#EXTM3U\n')
+        for quality, variant in variants.items():
+            if variant['bitrate'] > 0:
+                f.write('#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%(bitrate)s,RESOLUTION=%(resolution)s\n' % variant)
+                f.write(variant['playlist']+'\n')
+        log.info('Variant playlist created: {0}'.format(variantfilepath))
+
+
+
+def main(argv):
+    # Init
+    usage = 'Usage: {0} -i <input file>'.format(sys.argv[0])
+    inputfile = test = False
+    # Parse Args
+    try:
+        opts, args = getopt.getopt(argv,"hi:",[])
+    except getopt.GetoptError:
+        print usage
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-i"):
+            inputfile = arg
+
+    if not inputfile:
+        print usage
+        sys.exit(0)
+
+    # check if input file exists
+    if not os.path.isfile(inputfile):
+        log.error('File "{0}" not found'.format(inputfile))
+        sys.exit(2)
+
+    # convert files and create playlists
+    segmenter(inputfile=inputfile, dryrun=False)
+
+    # Exit
+    log.info('HLS segmentation completed in {0}'.format( ellapsed(True) ))
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
+
+
+#print 'Number of arguments:', len(sys.argv), 'arguments.'
+#print 'Argument List:', str(sys.argv)
+
+# lowprofile = 'ffmpeg -y -i {0} -c:a aac -strict experimental -ac 2 -b:a 64k -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 21 -b:v 400K -r 12 -g 36 -f hls -hls_time 1 -hls_list_size 0 -s 480x270 {1}_480x270.m3u8'
+# medprofile = 'ffmpeg -y -i {0} -c:a aac -strict experimental -ac 2 -b:a 96k -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 31 -b:v 600K -r 24 -g 72 -f hls -hls_time 1 -hls_list_size 0 -s 640x360 {1}_640x360.m3u8'
+# hiprofile = 'ffmpeg -y -i {0} -c:a aac -strict experimental -ac 2 -b:a 96k -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v main -level 32 -b:v 1500K -r 24 -g 72 -f hls -hls_time 1 -hls_list_size 0 -s 1280x720 {1}_1280x720.m3u8'
+
+
+#ffmpeg -i sintel_trailer-1080p.mp4 -hls_time 1 -hls_list_size 0 -hls_allow_cache 1 -hls_base_url 'http://localhost/' -strict -2 out.m3u8
