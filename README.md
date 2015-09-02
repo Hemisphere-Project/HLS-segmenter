@@ -6,9 +6,13 @@ For now, only the Segmenter - based on FFMPEG - is available.
 
 ## Segmenter
 
+DEPENDENCIES:
+
+* compile ffmpeg: https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu#ffmpeg
+
 USE:
 
-./segmenter -i video_path 
+./segmenter -i video_path
 
 It will create a directory near the input video location, with
 * subdirectories for each quality profile, hosting the chunks
@@ -26,7 +30,7 @@ It will create a directory near the input video location, with
   * Ability to choose profiles
 * Reorganize the Presets / Profiles file
 * Auto disable profiles with higher bitrate/resolution than the original media
-* validate HLS flux compatibility (using Apple provided tools) 
+* validate HLS flux compatibility (using Apple provided tools)
   * https://developer.apple.com/library/ios/technotes/tn2235/_index.html
   * https://developer.apple.com/streaming/ (Download section)
 * check if I-Frame can be optimized (at the beggining)
@@ -42,7 +46,7 @@ It will create a directory near the input video location, with
 * WebApp which can receive file upload, check for validity and push it to the segmenter
 
 ### HLS Media Manager
-* WebUX to manage uploaded files, control segmentation validity and give info on available streams 
+* WebUX to manage uploaded files, control segmentation validity and give info on available streams
 
 ## RESSOURCES
 
@@ -65,7 +69,7 @@ It will create a directory near the input video location, with
 2400/2400k_1024x768_x264_2272_quicktime_128.m3u8
 ```
 
-### BITRATE EVALUATION 
+### BITRATE EVALUATION
 
 FFmpeg can report the bitrate of the ts stream. Use the ffprobe tool and you'll get output like this:
 ```
@@ -73,5 +77,5 @@ Input #0, mpegts, from 'foo.ts':
   Duration: 00:04:50.87, start: 2.000011, bitrate: 10381 kb/s
   Program 1
     Stream #0.0[0x810]: Video: h264 (High), yuv420p, 1280x720 [PAR 1:1 DAR 16:9], 25 fps, 25 tbr, 90k tbn, 50 tbc
-```    
+```
 The bitrate is being given in kilobits per second, so multiply it by 1024 and you'll have the value you need for the BANDWIDTH tag.
