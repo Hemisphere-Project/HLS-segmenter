@@ -17,7 +17,9 @@ It will create a directory near the input video location, with
 ## TODO
 
 * add BASEURL while creating m3u8 playlist
-* validate HLS flux compatibility
+* validate HLS flux compatibility (using Apple provided tools) 
+  * https://developer.apple.com/library/ios/technotes/tn2235/_index.html
+  * https://developer.apple.com/streaming/ (Download section)
 * check if I-Frame can be optimized (at the beggining)
   * monitor: http://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame/14011638#14011638
   * After segementation: http://video.stackexchange.com/questions/4904/how-to-force-ffmpeg-to-insert-keyframe-at-first-frame-when-downsampling-a-framer
