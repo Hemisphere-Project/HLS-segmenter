@@ -89,7 +89,7 @@ def setkeyframes(inputfile, interval=10):
     log.info('Forcing Keyframes..')
 
     # Execute FFMPEG command
-    probe = subprocess.Popen((ffmpegcmd % preset).split(), stdout=subprocess.PIPE)
+    probe = subprocess.Popen(ffmpegcmd.split(), stdout=subprocess.PIPE)
     output, err = probe.communicate()
 
     if not err:
