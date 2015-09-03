@@ -85,7 +85,7 @@ def detect_bitrate(path):
 def setkeyframes(inputfile, interval=10):
     # base ffmpeg command
     ffmpegcmd = 'ffmpeg -i {input} -force_key_frames "expr:gte(t,n_forced*{interval})" k{interval}-{input}'.format(input=inputfile, interval=interval)
-
+    print ffmpegcmd
     log.info('Forcing Keyframes..')
 
     # Execute FFMPEG command
