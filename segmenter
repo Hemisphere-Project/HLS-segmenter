@@ -130,7 +130,7 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
         f.write('#EXTM3U\n')
         for quality, variant in variants.items():
             if variant['bitrate'] > 0:
-                f.write('#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=%(bitrate)s,RESOLUTION=%(resolution)s\n' % variant)
+                f.write('#EXT-X-STREAM-INF:BANDWIDTH=%(bitrate)s,RESOLUTION=%(resolution)s\n' % variant)
                 f.write(variant['playlist']+'\n')
         log.info('Variant playlist created: {0}'.format(variantfilepath))
 

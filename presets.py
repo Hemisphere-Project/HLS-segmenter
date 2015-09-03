@@ -8,7 +8,7 @@ SEGMENT_SIZE = 10
 STREAM_NAME = 'stream'
 
 # FFMPEG PRESET [ultrafast,superfast, veryfast, faster, fast, medium, slow, slower, veryslow]
-FFMPEG_PRESET = 'superfast'
+FFMPEG_PRESET = 'veryslow'
 
 # PRESETS FOR ADAPTATIVE QUALITY
 PROFILES = OrderedDict()
@@ -28,7 +28,7 @@ PROFILES['1-bad'] = {
     'buffersize':   '400k',
     'profile':      'baseline',
     'level':        '3.0',
-    'fps':          12
+    'fps':          15
 }
 PROFILES['2-tiny'] = {
     'resolutions':  { '4/3': '480x360', '16/9': '480x270' },
