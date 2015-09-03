@@ -84,12 +84,12 @@ def detect_bitrate(path):
 # Force Key Frames to match segment segmentsize
 def setkeyframes(inputfile, interval=10):
     # base ffmpeg command
-    ffmpegcmd = 'ffmpeg -i {input} -force_key_frames expr:gte(t,n_forced*2) k{interval}-{input}'.format(input=inputfile, interval=interval)
+    ffmpegcmd = 'ffmpeg -i {input} -force_key_frames "expr:gte(t,n_forced*2)" k{interval}-{input}'.format(input=inputfile, interval=interval)
     print ffmpegcmd
     log.info('Forcing Keyframes..')
 
     # Execute FFMPEG command
-    probe = subprocess.Popen(ffmpegcmd.split(), stdout=subprocess.PIPE)
+    probe = subprocess.Popen(ffmpegcmd, stdout=subprocess.PIPE, shell=True)
     output, err = probe.communicate()
 
     if not err:
