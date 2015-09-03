@@ -8,7 +8,7 @@ SEGMENT_SIZE = 10
 STREAM_NAME = 'stream'
 
 # FFMPEG PRESET [ultrafast,superfast, veryfast, faster, fast, medium, slow, slower, veryslow]
-FFMPEG_PRESET = 'veryslow'
+FFMPEG_PRESET = 'superfast'
 
 # PRESETS FOR ADAPTATIVE QUALITY
 PROFILES = OrderedDict()

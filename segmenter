@@ -83,7 +83,7 @@ def detect_bitrate(path):
 
 
 # Execute FFMPEG segmenter based on predefined profiles
-def segmenter(inputfile, dryrun=False):
+def segmenter(inputfile, dryrun=False, urlprefix='../'):
     # import profiles presets
     import presets
 
@@ -103,6 +103,7 @@ def segmenter(inputfile, dryrun=False):
     for quality, preset in profiles:
         log.info("Processing media with profile: {0}".format(quality))
         preset['outputpath'] = os.path.join(workpath, quality)
+        err = False
         if not dryrun:
             # Output path
             makedir(preset['outputpath'])
@@ -113,7 +114,7 @@ def segmenter(inputfile, dryrun=False):
         if not err:
             variants[quality] = {
                 'resolution': preset['resolution'],
-                'playlist': os.path.join(quality, preset['outputname']+'.m3u8'),
+                'playlist': urlprefix + os.path.join(workname, quality, preset['outputname']+'.m3u8'),
                 'bitrate': detect_bitrate(preset['outputpath'])
             }
         # Log
@@ -122,8 +123,6 @@ def segmenter(inputfile, dryrun=False):
                 log.debug('Profile {0} completed in {1}'.format(quality, ellapsed()))
         except:
             log.error('Error with profile {0}: {1}'.format(quality, err))
-
-
 
     # Create variant playlist
     variantfilepath = os.path.join(workpath, workname+'.m3u8')
@@ -139,17 +138,22 @@ def segmenter(inputfile, dryrun=False):
 
 def main(argv):
     # Init
-    usage = 'Usage: {0} -i <input file>'.format(sys.argv[0])
-    inputfile = test = False
+    usage = 'Usage: {0} -i <input file> [-u <urlprefix>] [-p] '.format(sys.argv[0])
+    inputfile = test = dryrun = False
+    urlprefix = '../'
     # Parse Args
     try:
-        opts, args = getopt.getopt(argv,"hi:",[])
+        opts, args = getopt.getopt(argv,"hi:u:p",[])
     except getopt.GetoptError:
         print usage
         sys.exit(2)
     for opt, arg in opts:
         if opt in ("-i"):
             inputfile = arg
+        if opt in ("-u"):
+            urlprefix = arg
+        if opt in ("-p"):
+            variantonly = True
 
     if not inputfile:
         print usage
@@ -161,7 +165,7 @@ def main(argv):
         sys.exit(2)
 
     # convert files and create playlists
-    segmenter(inputfile=inputfile, dryrun=False)
+    segmenter(inputfile=inputfile, dryrun=variantonly, urlprefix=urlprefix)
 
     # Exit
     log.info('HLS segmentation completed in {0}'.format( ellapsed(True) ))
