@@ -14,10 +14,10 @@ DEPENDENCIES: FFmpeg
 
 USE:
 
-./segmenter -i video_path [-u <url_prefix>] [-p]
+./segmenter -i *video_path* [-u *url_prefix*] [-p]
 
-* -i <path> indicate the path to the input video file. it can be either relative or absolute.
-* -u <url> allow to prepend an url to the variants playlists path, i.e. : http://yourserver/
+* -i *path* indicate the path to the input video file. it can be either relative or absolute.
+* -u *url* allow to prepend an url to the variants playlists path, i.e. : http://yourserver/
 * -p only regenerate the variant playlist but do not re-encode the chunks (dryrun)
 
 It will create a directory near the input video location, with
