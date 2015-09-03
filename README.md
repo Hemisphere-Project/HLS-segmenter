@@ -6,9 +6,11 @@ For now, only the Segmenter - based on FFMPEG - is available.
 
 ## Segmenter
 
-DEPENDENCIES:
+DEPENDENCIES: FFmpeg
 
-* compile ffmpeg: https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu#ffmpeg
+* Tested with FFmpeg 2.5.8 on Ubuntu 15.04 
+* Tested with FFmpeg 2.6.4 on Debian 8 (http://www.deb-multimedia.org/)
+
 
 USE:
 
