@@ -12,15 +12,15 @@ FFMPEG_PRESET = 'veryslow'
 
 # PRESETS FOR ADAPTATIVE QUALITY
 PROFILES = OrderedDict()
-PROFILES['0-ugly'] = {
+'''PROFILES['0-ugly'] = {
     'resolutions':  { '4/3': '400x300', '16/9': '416x234' },
-    'audiobitrate': '32k',
+    'audiobitrate': '64k',
     'videobitrate': '100k',
     'buffersize':   '200k',
     'profile':      'baseline',
     'level':        '3.0',
     'fps':          10
-}
+}'''
 PROFILES['1-bad'] = {
     'resolutions':  { '4/3': '400x300', '16/9': '416x234' },
     'audiobitrate': '64k',
@@ -41,7 +41,7 @@ PROFILES['2-tiny'] = {
 }
 PROFILES['3-low'] = {
     'resolutions':  { '4/3': '640x480', '16/9': '640x360' },
-    'audiobitrate': '64k',
+    'audiobitrate': '96k',
     'videobitrate': '600k',
     'buffersize':   '1200k',
     'profile':      'baseline',
@@ -60,7 +60,7 @@ PROFILES['4-medium'] = {
 '''
 PROFILES['5-high'] = {
     'resolutions':  { '4/3': '960x720', '16/9': '960x540' },
-    'audiobitrate': '96k',
+    'audiobitrate': '128k',
     'videobitrate': '3500k',
     'buffersize':   '7000k',
     'profile':      'main',
