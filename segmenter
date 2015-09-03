@@ -139,7 +139,7 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
 def main(argv):
     # Init
     usage = 'Usage: {0} -i <input file> [-u <urlprefix>] [-p] '.format(sys.argv[0])
-    inputfile = test = dryrun = False
+    inputfile = test = variantonly = False
     urlprefix = '../'
     # Parse Args
     try:
