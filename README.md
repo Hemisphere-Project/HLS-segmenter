@@ -14,19 +14,21 @@ DEPENDENCIES: FFmpeg
 
 USE:
 
-./segmenter -i video_path
+./segmenter -i video_path [-u <url_prefix>] [-p]
+
+* -i <path> indicate the path to the input video file. it can be either relative or absolute.
+* -u <url> allow to prepend an url to the variants playlists path, i.e. : http://yourserver/
+* -p only regenerate the variant playlist but do not re-encode the chunks (dryrun)
 
 It will create a directory near the input video location, with
 * subdirectories for each quality profile, hosting the chunks
-* the m3u8 playlist file
+* the m3u8 playlist files
 
 ## TODO
 
 ### Segmenter
 * Add more options to the segmenter command line:
   * Output path
-  * BASEURL prefix
-  * Dry Run option
   * Segments size (now it's the 10s default)
   * FFmpeg preset for h264 encoding (now it's the 'veryslow' default)
   * Ability to choose profiles
