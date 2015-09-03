@@ -2,7 +2,7 @@ import os.path
 from collections import OrderedDict
 
 # SEGMENTS DURATION (seconds)
-SEGMENT_SIZE = 10
+SEGMENT_SIZE = 2
 
 # DEFAULT STREAM NAME
 STREAM_NAME = 'stream'
@@ -57,6 +57,7 @@ PROFILES['4-medium'] = {
     'level':        '3.1',
     'fps':          24
 }
+'''
 PROFILES['5-high'] = {
     'resolutions':  { '4/3': '960x720', '16/9': '960x540' },
     'audiobitrate': '96k',
@@ -75,6 +76,7 @@ PROFILES['6-hd'] = {
     'level':        '3.1',
     'fps':          24
 }
+'''
 
 def build(inputfile, ratio='16/9', name=False, segmentsize=False, ffmpegmode=False):
     presets = PROFILES.copy()
