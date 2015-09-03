@@ -81,6 +81,24 @@ def detect_bitrate(path):
     log.debug('Bitrate detected: {0}'.format(bitrate)) if bitrate > 0 else  log.warning('No Bitrate detected in {0}'.format(path))
     return bitrate
 
+# Force Key Frames to match segment segmentsize
+def setkeyframes(inputfile, interval=10):
+    # base ffmpeg command
+    ffmpegcmd = 'ffmpeg -i %(inputfile)s -force_key_frames "expr:gte(t,n_forced*%(interval)s)" %(inputfile)s-keyed%(interval)s'
+
+    log.info('Forcing Keyframes..')
+
+    # Execute FFMPEG command
+    probe = subprocess.Popen((ffmpegcmd % preset).split(), stdout=subprocess.PIPE)
+    output, err = probe.communicate()
+
+    if not err:
+        log.info('Forced Keyframe media created: %(inputfile)s-keyed%(interval)s')
+        return '%(inputfile)s-keyed%(interval)s'
+    else:
+        log.warning('Can\'t force keyframes..')
+        return '%(inputfile)s'
+
 
 # Execute FFMPEG segmenter based on predefined profiles
 def segmenter(inputfile, dryrun=False, urlprefix='../'):
@@ -96,10 +114,17 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
     if not dryrun:
         makedir(workpath)
 
-    # execute ffmpeg commands formated with the profiles
+
+    # prepare ffmpeg commands formated with the profiles
     variants = OrderedDict()
     profiles = presets.build(inputfile=inputfile, ratio=detect_ratio(inputfile))
     ellapsed()
+
+    # try to force keyframes
+    setkeyframes(inputfile=inputfile, interval=presets.SEGMENT_SIZE)
+    ellapsed()
+
+    # start segmenter
     for quality, preset in profiles:
         log.info("Processing media with profile: {0}".format(quality))
         preset['outputpath'] = os.path.join(workpath, quality)

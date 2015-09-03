@@ -83,7 +83,7 @@ def build(inputfile, ratio='16/9', name=False, segmentsize=False, ffmpegmode=Fal
     for quality, profile in presets.items():
         try:
             presets[quality]['resolution'] = profile['resolutions'][ratio]
-            presets[quality]['gop'] = presets[quality]['fps'] * 3
+            presets[quality]['gop'] = presets[quality]['fps'] * SEGMENT_SIZE
             presets[quality]['inputfile'] = inputfile
             presets[quality]['outputname'] = name if name else STREAM_NAME
             presets[quality]['segmentsize'] = segmentsize if segmentsize else SEGMENT_SIZE
