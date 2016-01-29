@@ -1,8 +1,7 @@
-# HLS-server
-Linux HLS Server including uploader, segmenter, chunks dealer and media manager
+# HLS-segmenter
+HLS Segmenter is a configurable python script to achieve Http Live Streaming segmentation, playlist and variants playlist from a given movie file.
 
-This project is in early development status.
-For now, only the Segmenter - based on FFMPEG - is available.
+HLS Segmenter use ffmpeg, and works great on Linux.
 
 ## Segmenter
 
@@ -12,17 +11,27 @@ DEPENDENCIES: FFmpeg
 * Tested with FFmpeg 2.6.4 on Debian 8 (http://www.deb-multimedia.org/)
 
 
+CONFIGURE:
+
+You can create "Profiles" in presets.py (see existing ones to get an idea).
+
 USE:
 
 ./segmenter -i *video_path* [-u *url_prefix*] [-p]
 
-* -i *path* indicate the path to the input video file. it can be either relative or absolute.
-* -u *url* allow to prepend an url to the variants playlists path, i.e. : http://yourserver/
+* -i *video_path* indicate the path to the input video file. it can be either relative or absolute.
+* -u *url_prefix* allow to prepend an url to the playlists path, i.e. : **http://yourserver/**.This base url should reach the input video folder location.
 * -p only regenerate the variant playlist but do not re-encode the chunks (dryrun)
 
-It will create a directory near the input video location, with
-* subdirectories for each quality profile, hosting the chunks
-* the m3u8 playlist files
+If your input media name was **mymovie.mp4**:
+It will create a new directory **mymovie** next to the input video location, with
+* a re-encoded version of the intput movie, using the first profile (can be use as a fallback for players without HLS support) also named **mymovie.mp4**
+* the main variant playlist file .m3u8, which link to the profile's playlists named **mymovie.m3u8**
+* subdirectories for each quality profile, hosting the chunks and the associated playlist.
+
+To play the HLS stream you only need to provide the movie.m3u8 url, which should be something like *url_prefix*/**mymovie**/**mymovie.m3u8**
+
+
 
 ## TODO
 
