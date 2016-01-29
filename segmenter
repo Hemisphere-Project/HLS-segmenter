@@ -121,7 +121,7 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
     ellapsed()
 
     # try to force keyframes
-    inputfile = setkeyframes(inputfile=inputfile, interval=presets.SEGMENT_SIZE)
+    # inputfile = setkeyframes(inputfile=inputfile, interval=presets.SEGMENT_SIZE) 
     ellapsed()
 
     # start segmenter
