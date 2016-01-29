@@ -94,6 +94,7 @@ http://localhost/myvideo/6-hd/stream.m3u8
 ### BITRATE EVALUATION
 
 FFmpeg can report the bitrate of the ts stream. Use the ffprobe tool and you'll get output like this:
+
 ffprobe ./myvideo/3-low/3-low3.ts (the third chunk for the "low" profile)
 ```
 Input #0, mpegts, from '3-low3.ts':
