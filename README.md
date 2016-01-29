@@ -19,17 +19,25 @@ USE:
 
 ./segmenter -i *video_path* [-u *url_prefix*] [-p]
 
-* -i *video_path* indicate the path to the input video file. it can be either relative or absolute.
-* -u *url_prefix* allow to prepend an url to the playlists path, i.e. : **http://yourserver/**.This base url should reach the input video folder location.
+* -i *video_path* indicate the path to the input video file
+  * it can be either relative (to the script execution path) or absolute.
+* -u *url_prefix* allow to prepend an url to the playlists path, i.e. : **http://yourserver/videofolder/**
+  * This base url should reach the input video folder location.
 * -p only regenerate the variant playlist but do not re-encode the chunks (dryrun)
 
-If your input media name was **mymovie.mp4**:
-It will create a new directory **mymovie** next to the input video location, with
-* a re-encoded version of the intput movie, using the first profile (can be use as a fallback for players without HLS support) also named **mymovie.mp4**
-* the main variant playlist file .m3u8, which link to the profile's playlists named **mymovie.m3u8**
+Let say your input media is /home/web/video/**mymovie.mp4**:
+And that you have a webserver with http://domain.tld/ linked to /home/web/
+
+The command will be
+
+./segmenter -i /home/web/video/mymovie.mp4 -u http://domain.tld/video/
+
+It will create a new directory /home/web/video/**mymovie**/ next to the input video location, with
+* a re-encoded version of the intput movie, using the first profile (can be use as a fallback for players without HLS support) also named /home/web/video/**mymovie**/**mymovie.mp4**
+* the main variant playlist file .m3u8, which link to the profile's playlists named /home/web/video/**mymovie**/**mymovie.m3u8**
 * subdirectories for each quality profile, hosting the chunks and the associated playlist.
 
-To play the HLS stream you only need to provide the movie.m3u8 url, which should be something like *url_prefix*/**mymovie**/**mymovie.m3u8**
+To play the HLS stream you only need to provide the movie.m3u8 url, like this http://domain.tld/video/**mymovie**/**mymovie.m3u8**
 
 
 
@@ -38,9 +46,9 @@ To play the HLS stream you only need to provide the movie.m3u8 url, which should
 ### Segmenter
 * Add more options to the segmenter command line:
   * Output path
-  * Segments size (now it's the 10s default)
-  * FFmpeg preset for h264 encoding (now it's the 'veryslow' default)
-  * Ability to choose profiles
+  * Segments size (it can be defined in presets.py at SEGMENT_SIZE)
+  * FFmpeg preset for h264 encoding (it can be defined in presets.py at FFMPEG_PRESET)
+  * Ability to choose specific profiles
 * Reorganize the Presets / Profiles file
 * Auto disable profiles with higher bitrate/resolution than the original media
 * validate HLS flux compatibility (using Apple provided tools)
@@ -55,40 +63,41 @@ To play the HLS stream you only need to provide the movie.m3u8 url, which should
 * Create a small HTTP file server to distribute the M3U8 playlists and chunks
 * Proper MIME Type
 
-### HLS Uploader
-* WebApp which can receive file upload, check for validity and push it to the segmenter
-
-### HLS Media Manager
-* WebUX to manage uploaded files, control segmentation validity and give info on available streams
-
 ## RESSOURCES
 
-### EXEMPLE M3U8
+### EXEMPLE MAIN VARIANT M3U8 PLAYLIST
+command: ./segmenter -i /var/www/myvideo.mp4 -u http://localhost/
+playlist url: http://localhost/myvideo/myvideo.m3u8
 ```
 #EXTM3U
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=512376
-500/500k_512x384_x264_372_quicktime_128.m3u8
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=68795
-64/64k_256x192_x264_32_quicktime_32.m3u8
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=155580
-150/150k_256x192_x264_118_quicktime_32.m3u8
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=308895
-300/300k_512x384_x264_172_quicktime_128.m3u8
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=811310
-800/800k_512x384_x264_672_quicktime_128.m3u8
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1210182
-1200/1200k_1024x768_x264_1072_quicktime_128.m3u8
-#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2408106
-2400/2400k_1024x768_x264_2272_quicktime_128.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=244400,RESOLUTION=416x234
+http://localhost/myvideo/0-ugly/stream.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=421120,RESOLUTION=416x234
+http://localhost/myvideo/1-bad/stream.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=733200,RESOLUTION=480x270
+http://localhost/myvideo/2-tiny/stream.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=1182145,RESOLUTION=640x360
+http://localhost/myvideo/3-low/stream.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=2192834,RESOLUTION=640x360
+http://localhost/myvideo/4-medium/stream.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=5888165,RESOLUTION=960x540
+http://localhost/myvideo/5-high/stream.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=8663048,RESOLUTION=1280x720
+http://localhost/myvideo/6-hd/stream.m3u8
 ```
 
 ### BITRATE EVALUATION
 
 FFmpeg can report the bitrate of the ts stream. Use the ffprobe tool and you'll get output like this:
+ffprobe ./myvideo/3-low/3-low3.ts (the third chunk for the "low" profile)
 ```
-Input #0, mpegts, from 'foo.ts':
-  Duration: 00:04:50.87, start: 2.000011, bitrate: 10381 kb/s
-  Program 1
-    Stream #0.0[0x810]: Video: h264 (High), yuv420p, 1280x720 [PAR 1:1 DAR 16:9], 25 fps, 25 tbr, 90k tbn, 50 tbc
+Input #0, mpegts, from '3-low3.ts':
+  Duration: 00:00:02.00, start: 7.423222, bitrate: 851 kb/s
+  Program 1 
+    Metadata:
+      service_name    : Service01
+      service_provider: FFmpeg
+    Stream #0:0[0x100]: Video: h264 (Constrained Baseline) ([27][0][0][0] / 0x001B), yuv420p, 640x360 [SAR 1:1 DAR 16:9], 24 fps, 24 tbr, 90k tbn, 48 tbc
+    Stream #0:1[0x101]: Audio: aac (LC) ([15][0][0][0] / 0x000F), 44100 Hz, stereo, fltp, 93 kb/s
 ```
 The bitrate is being given in kilobits per second, so multiply it by 1024 and you'll have the value you need for the BANDWIDTH tag.
