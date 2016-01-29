@@ -25,6 +25,57 @@ def makedir(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path): pass
         else: raise
 
+# Get Size of a folder (recursively)
+def getFolderSize(folder):
+    total_size = os.path.getsize(folder)
+    for item in os.listdir(folder):
+        itempath = os.path.join(folder, item)
+        if os.path.isfile(itempath):
+            total_size += os.path.getsize(itempath)
+        elif os.path.isdir(itempath):
+            total_size += getFolderSize(itempath)
+    return total_size
+
+# Utils to calculate the ratio between
+#   the current execution time and the movie duration
+#   gives movie_duration * factor = encoding_duration
+def time_factor(filepath):
+    factor = 0
+    def result(valid=True):
+        if valid:
+            log.info('Time factor: x{0}'.format(round(factor, 2)))
+        return factor
+
+    # FFProbe command
+    ffprobecmd = 'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 {0}'.format(filepath)
+    probe = subprocess.Popen(ffprobecmd.split(), stdout=subprocess.PIPE)
+    output, err = probe.communicate()
+    try:
+        output = float(output.split('=')[1])
+        factor = (time.time() - starttime)/output
+        return result()
+    except:
+        pass
+    return result(False)
+
+# Utils to calculate the ratio between
+#   the output folder size and the original file size
+#   gives original_size * factor = output_size
+def size_factor(filepath):
+    factor = 0
+    def result(valid=True):
+        if valid:
+            log.info('Size factor: x{0}'.format(round(factor, 2)))
+        return factor
+
+    try:
+        inputsize = os.path.getsize(filepath)
+        outputsize = getFolderSize(os.path.splitext(filepath)[0])
+        factor = outputsize*1./inputsize
+        return result()
+    except:
+        pass
+    return result(False)
 
 # Utils to detect video aspect ratio using FFProbe
 def detect_ratio(filepath):
@@ -106,10 +157,10 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
     import presets
 
     # base ffmpeg command for segmenter
-    ffmpegcmd_segm = 'ffmpeg -y -v warning -i %(inputfile)s -c:a aac -strict experimental -ac 2 -b:a %(audiobitrate)s -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v %(profile)s -preset %(ffmpegmode)s -level %(level)s -b:v %(videobitrate)s -maxrate %(videobitrate)s -bufsize %(buffersize)s -threads 0 -r %(fps)s -g %(gop)s -hls_time %(segmentsize)s -hls_list_size 0 -s %(resolution)s %(outputpath)s/%(outputname)s.m3u8'
+    ffmpegcmd_segm = 'ffmpeg -y -v error -i %(inputfile)s -c:a aac -strict experimental -ac 2 -b:a %(audiobitrate)s -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v %(profile)s -preset %(ffmpegmode)s -level %(level)s -b:v %(videobitrate)s -maxrate %(videobitrate)s -bufsize %(buffersize)s -threads 0 -r %(fps)s -g %(gop)s -hls_time %(segmentsize)s -hls_list_size 0 -s %(resolution)s %(outputpath)s/%(outputname)s.m3u8'
 
     # fallback media
-    ffmpegcmd_media = 'ffmpeg -y -v warning -i %(inputfile)s -c:a aac -strict experimental -ac 2 -b:a %(audiobitrate)s -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v %(profile)s -preset %(ffmpegmode)s -level %(level)s -b:v %(videobitrate)s -maxrate %(videobitrate)s -bufsize %(buffersize)s -threads 0 -r %(fps)s -s %(resolution)s %(workpath)s/%(workname)s.mp4'
+    ffmpegcmd_media = 'ffmpeg -y -v error -i %(inputfile)s -c:a aac -strict experimental -ac 2 -b:a %(audiobitrate)s -ar 44100 -c:v libx264 -pix_fmt yuv420p -profile:v %(profile)s -preset %(ffmpegmode)s -level %(level)s -b:v %(videobitrate)s -maxrate %(videobitrate)s -bufsize %(buffersize)s -threads 0 -r %(fps)s -s %(resolution)s %(workpath)s/%(workname)s.mp4'
 
 
     # working path / name
@@ -132,7 +183,6 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
     # start segmenter
     firstPreset = True
     for quality, preset in profiles:
-        log.info("Processing media with profile: {0}".format(quality))
         preset['outputpath'] = os.path.join(workpath, quality)
         preset['workname'] = workname
         preset['workpath'] = workpath
@@ -143,11 +193,13 @@ def segmenter(inputfile, dryrun=False, urlprefix='../'):
 
             # Execute FFMPEG command MEDIA (for the first preset only)
             if firstPreset:
+                log.info("Encoding fallback media with profile: {0}".format(quality))
                 probe = subprocess.Popen((ffmpegcmd_media % preset).split(), stdout=subprocess.PIPE)
                 output, err = probe.communicate()
                 firstPreset = False
 
             # Execute FFMPEG command SEGMENTER
+            log.info("Processing media with profile: {0}".format(quality))
             probe = subprocess.Popen((ffmpegcmd_segm % preset).split(), stdout=subprocess.PIPE)
             output, err = probe.communicate()
 
@@ -210,6 +262,8 @@ def main(argv):
 
     # Exit
     log.info('HLS segmentation completed in {0}'.format( ellapsed(True) ))
+    time_factor(inputfile)
+    size_factor(inputfile)
     sys.exit(0)
 
 
