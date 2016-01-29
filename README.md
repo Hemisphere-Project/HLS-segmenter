@@ -25,21 +25,26 @@ USE:
   * This base url should reach the input video folder location.
 * -p only regenerate the variant playlist but do not re-encode the chunks (dryrun)
 
-Let say your input media is /home/web/video/**mymovie.mp4**:
-And that you have a webserver with http://domain.tld/ linked to /home/web/
+Let say your input media is /var/www/video/**mymovie.mp4**:
+And that you have a webserver with http://localhost/ linked to /var/www/
 
 The command will be
 
-./segmenter -i /home/web/video/mymovie.mp4 -u http://domain.tld/video/
+./segmenter -i /var/www/video/mymovie.mp4 -u http://localhost/video/
 
-It will create a new directory /home/web/video/**mymovie**/ next to the input video location, with
-* a re-encoded version of the intput movie, using the first profile (can be use as a fallback for players without HLS support) also named /home/web/video/**mymovie**/**mymovie.mp4**
-* the main variant playlist file .m3u8, which link to the profile's playlists named /home/web/video/**mymovie**/**mymovie.m3u8**
+It will create a new directory /var/www/video/**mymovie**/ next to the input video location, with
+* a re-encoded version of the intput movie, using the first profile (can be use as a fallback for players without HLS support) also named /var/www/video/**mymovie**/**mymovie.mp4**
+* the main variant playlist file .m3u8, which link to the profile's playlists named /var/www/video/**mymovie**/**mymovie.m3u8**
 * subdirectories for each quality profile, hosting the chunks and the associated playlist.
 
-To play the HLS stream you only need to provide the movie.m3u8 url, like this http://domain.tld/video/**mymovie**/**mymovie.m3u8**
+To play the HLS stream you only need to provide the movie.m3u8 url, like this http://localhost/video/**mymovie**/**mymovie.m3u8**
 
+And if your client doesn't support HLS you can fallback to
+http://localhost/video/**mymovie**/**mymovie.mp4** 
+which is a re-encode of your original movie with the first preset in the list.
 
+Your original movie should still be available from there:
+http://localhost/video/**mymovie.mp4**
 
 ## TODO
 
