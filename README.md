@@ -37,14 +37,14 @@ It will create a new directory /var/www/video/**mymovie**/ next to the input vid
 * the main variant playlist file .m3u8, which link to the profile's playlists named /var/www/video/**mymovie**/**mymovie.m3u8**
 * subdirectories for each quality profile, hosting the chunks and the associated playlist.
 
-To play the HLS stream you only need to provide the movie.m3u8 url, like this http://localhost/video/**mymovie**/**mymovie.m3u8**
+To play the HLS stream you only need to provide the movie.m3u8 url, like this http://localhost/video/mymovie/mymovie.m3u8
 
 And if your client doesn't support HLS you can fallback to
-http://localhost/video/**mymovie**/**mymovie.mp4** 
+http://localhost/video/mymovie/mymovie.mp4
 which is a re-encode of your original movie with the first preset in the list.
 
 Your original movie should still be available from there:
-http://localhost/video/**mymovie.mp4**
+http://localhost/video/mymovie.mp4
 
 ## TODO
 
@@ -72,7 +72,8 @@ http://localhost/video/**mymovie.mp4**
 
 ### EXEMPLE MAIN VARIANT M3U8 PLAYLIST
 command: ./segmenter -i /var/www/myvideo.mp4 -u http://localhost/
-playlist url: http://localhost/myvideo/myvideo.m3u8
+
+it will generate the main playlist at url: http://localhost/myvideo/myvideo.m3u8
 ```
 #EXTM3U
 #EXT-X-STREAM-INF:BANDWIDTH=244400,RESOLUTION=416x234
