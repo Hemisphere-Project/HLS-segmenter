@@ -54,24 +54,24 @@ PROFILES['4-medium'] = {
     'level':        '3.1',
     'fps':          24
 }
-# PROFILES['5-high'] = {
-#     'resolutions':  { '4/3': '960x720', '16/9': '960x540' },
-#     'audiobitrate': '128k',
-#     'videobitrate': '3500k',
-#     'buffersize':   '7000k',
-#     'profile':      'main',
-#     'level':        '3.1',
-#     'fps':          24
-# }
-# PROFILES['6-hd'] = {
-#     'resolutions':  { '4/3': '1280x960', '16/9': '1280x720' },
-#     'audiobitrate': '128k',
-#     'videobitrate': '5000k',
-#     'buffersize':   '10000k',
-#     'profile':      'main',
-#     'level':        '3.1',
-#     'fps':          24
-# }
+PROFILES['5-high'] = {
+    'resolutions':  { '4/3': '960x720', '16/9': '960x540' },
+    'audiobitrate': '128k',
+    'videobitrate': '3500k',
+    'buffersize':   '7000k',
+    'profile':      'main',
+    'level':        '3.1',
+    'fps':          24
+}
+PROFILES['6-hd'] = {
+    'resolutions':  { '4/3': '1280x960', '16/9': '1280x720' },
+    'audiobitrate': '128k',
+    'videobitrate': '5000k',
+    'buffersize':   '10000k',
+    'profile':      'main',
+    'level':        '3.1',
+    'fps':          24
+}
 
 
 def build(inputfile, ratio='16/9', segmentsize=False, ffmpegmode=False):
